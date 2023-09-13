@@ -34,10 +34,10 @@ class Deal:
 
 class Position:
     type: int = 1 # buy = 1, sell = 2
-    quantity: float
-    price: float
-    loss_accumulator: float
-    count_of_trade: int
+    quantity: float = 0
+    price: float = 0
+    loss_accumulator: float = 0
+    count_of_trade: int = 0
     capital: int
     take_profit: float
     stop_loss: float
@@ -87,7 +87,7 @@ conn = psycopg2.connect(
     host='127.0.0.1', port='5432'
 )
 cursor = conn.cursor()
-query = "SELECT type,time,price,quantity FROM DEALS;"
+query = "SELECT type,time,price,volume FROM DEALS;"
 cursor.execute(query)
 results = cursor.fetchall()
 
@@ -96,7 +96,7 @@ for result in results:
     deals.append(Deal(type=result[0], time=result[1], price=result[2], quantity=result[3]))
 conn.close()
 
-position = Position
+position = Position()
 position.set_capital(capital=start_capital)
 position.set_take_profit(take_profit=take_profit)
 position.set_stop_loss(stop_loss=stop_loss)
@@ -104,10 +104,10 @@ position.set_stop_loss(stop_loss=stop_loss)
 volumes:List[float] = list()
 for deal in deals:
     if deal.is_buy() and position.is_buy():
-        position.buy()
+        position.buy(deal)
         continue
     if deal.is_sell() and position.is_sell():
-        position.sell()
+        position.sell(deal)
         volumes.append(position.volume())
 
 position.summary()
