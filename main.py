@@ -1,4 +1,6 @@
+import psycopg2
 from typing import List
+
 
 take_profit = 0.02 # percent
 stop_loss = 0.02 # percent
@@ -11,6 +13,12 @@ class Deal:
     type: int
     quantity: float
     price: float
+
+    def __init__(self, time: int, type: int, quantity: float, price: float ):
+        self.time = time
+        self.type = type
+        self.quantity = quantity
+        self.price = price
 
     def get_price(self) -> float:
         return self.price
@@ -74,13 +82,25 @@ class Position:
     def summary(self):
         print("count of deals: %d, volume: %f", self.count_of_trade, self.volume())
 
+conn = psycopg2.connect(
+    database="postgres", user='postgres', password='postgres',
+    host='127.0.0.1', port='5432'
+)
+cursor = conn.cursor()
+query = "SELECT type,time,price,quantity FROM DEALS;"
+cursor.execute(query)
+results = cursor.fetchall()
+
+deals:List[Deal] = list()
+for result in results:
+    deals.append(Deal(type=result[0], time=result[1], price=result[2], quantity=result[3]))
+    
 position = Position
 position.set_capital(capital=start_capital)
 position.set_take_profit(take_profit=take_profit)
 position.set_stop_loss(stop_loss=stop_loss)
 
 volumes:List[float] = list()
-deals:List[Deal] = list()
 for deal in deals:
     if deal.is_buy() and position.is_buy():
         position.buy()
