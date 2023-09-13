@@ -94,7 +94,8 @@ results = cursor.fetchall()
 deals:List[Deal] = list()
 for result in results:
     deals.append(Deal(type=result[0], time=result[1], price=result[2], quantity=result[3]))
-    
+conn.close()
+
 position = Position
 position.set_capital(capital=start_capital)
 position.set_take_profit(take_profit=take_profit)
